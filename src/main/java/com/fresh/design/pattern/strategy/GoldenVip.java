@@ -7,7 +7,6 @@ import java.math.BigDecimal;
  */
 @TotalValidRegion(min = 3000)
 public class GoldenVip implements CalPrice {
-    @Override
     public BigDecimal calPrice(BigDecimal originalPrice) {
         return originalPrice.multiply(new BigDecimal(0.5));
     }

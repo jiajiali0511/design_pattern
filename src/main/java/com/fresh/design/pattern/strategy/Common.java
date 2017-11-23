@@ -7,7 +7,6 @@ import java.math.BigDecimal;
  */
 @TotalValidRegion(max = 1000)
 public class Common implements CalPrice {
-    @Override
     public BigDecimal calPrice(BigDecimal originalPrice) {
         return originalPrice;
     }
