@@ -68,7 +68,6 @@ public class CalPriceFactory {
         try {
             File file = new File(classLoader.getResource(CAL_PRICE_PACKAGE.replace(".", "/")).toURI());
             return file.listFiles(new FileFilter() {
-                @Override
                 public boolean accept(File pathname) {
                     if (pathname.getName().endsWith(".class")) {
                         return true;
