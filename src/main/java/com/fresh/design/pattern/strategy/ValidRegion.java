@@ -4,12 +4,15 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.math.BigDecimal;
 
 /**
- * 总额有效区间
+ * Created by ljiajiali on 17-11-16.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface TotalValidRegion {
-    ValidRegion value() default @ValidRegion;
+public @interface ValidRegion {
+    int max() default Integer.MAX_VALUE;
+    int min() default Integer.MIN_VALUE;
+    int order() default 0;
 }

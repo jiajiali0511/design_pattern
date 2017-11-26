@@ -5,7 +5,8 @@ import java.math.BigDecimal;
 /**
  * Created by ljiajiali on 17-11-16.
  */
-@TotalValidRegion(min = 3000)
+
+@TotalValidRegion(@ValidRegion(min = 3000, order = 99))
 public class GoldenVip implements CalPrice {
     @Override
     public BigDecimal calPrice(BigDecimal originalPrice) {

@@ -1,6 +1,8 @@
 package com.fresh.design.pattern.strategy;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import org.apache.commons.collections.MapUtils;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -8,6 +10,7 @@ import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.SortedMap;
 
 /**
  * Created by ljiajiali on 17-11-16.
@@ -19,24 +22,40 @@ public class CalPriceFactory {
     private List<Class<? extends CalPrice>> calPriceList;
 
     public CalPrice createCalPrice(Custom custom) {
+        SortedMap<Integer, Class<? extends CalPrice>> sortedMap = Maps.newTreeMap();
         for (Class<? extends CalPrice> clazz : calPriceList) {
-            TotalValidRegion validRegion = handleAnnotation(clazz);
-            if (validRegion == null) {
+            Annotation annotation = handleAnnotation(clazz);
+            if (annotation == null) {
                 continue;
             }
-            if (new BigDecimal(validRegion.min()).compareTo(custom.getTotalAmount()) <= 0 && new BigDecimal(validRegion.max()).compareTo(custom.getTotalAmount()) > 0) {
-                try {
-                    return clazz.newInstance();
-                } catch (Exception e) {
-                    throw new RuntimeException("策略获得失败");
+            if (annotation instanceof TotalValidRegion) {
+                TotalValidRegion totalValidRegion = (TotalValidRegion) annotation;
+                if (new BigDecimal(totalValidRegion.value().min()).compareTo(custom.getTotalAmount()) <= 0
+                        && new BigDecimal(totalValidRegion.value().max()).compareTo(custom.getTotalAmount()) > 0) {
+                    sortedMap.put(totalValidRegion.value().order(), clazz);
+                }
+            } else if (annotation instanceof OnceValidRegion) {
+                OnceValidRegion onceValidRegion = (OnceValidRegion) annotation;
+                if (new BigDecimal(onceValidRegion.value().min()).compareTo(custom.getTotalAmount()) <= 0
+                        && new BigDecimal(onceValidRegion.value().max()).compareTo(custom.getTotalAmount()) > 0) {
+                    sortedMap.put(onceValidRegion.value().order(), clazz);
                 }
             }
         }
-        throw new RuntimeException("策略获得失败");
+        try {
+            return CallPriceProxy.getCallPriceProxy(sortedMap);
+        } catch (Exception e) {
+            throw new RuntimeException("策略获得失败");
+        }
     }
 
-    private TotalValidRegion handleAnnotation(Class<? extends CalPrice> clazz) {
-        return clazz.getAnnotation(TotalValidRegion.class);
+    private Annotation handleAnnotation(Class<? extends CalPrice> clazz) {
+        TotalValidRegion totalValidRegion = clazz.getAnnotation(TotalValidRegion.class);
+        OnceValidRegion onceValidRegion = clazz.getAnnotation(OnceValidRegion.class);
+        if (totalValidRegion == null && onceValidRegion == null) {
+            return null;
+        }
+        return totalValidRegion == null ? onceValidRegion : totalValidRegion;
     }
 
     private CalPriceFactory() {
